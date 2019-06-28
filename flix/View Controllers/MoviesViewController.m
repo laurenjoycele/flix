@@ -17,6 +17,9 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (nonatomic, strong) UIRefreshControl *refreshControl;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *activityIndicator;
+//for search
+@property (strong, nonatomic) NSArray *filteredData;
+@property (strong, nonatomic) UISearchController *searchController;
 
 @end
 
@@ -36,6 +39,24 @@
     self.refreshControl =[[UIRefreshControl alloc] init];
     [self.refreshControl addTarget:self action:@selector(fetchMovies) forControlEvents:UIControlEventValueChanged];
     [self.tableView insertSubview:self.refreshControl atIndex:0];
+    
+    //for search
+    // Initializing with searchResultsController set to nil means that
+    // searchController will use this view controller to display the search results
+    
+    self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    self.searchController.searchResultsUpdater = self;
+    
+    // If we are using this same view controller to present the results
+    // dimming it out wouldn't make sense. Should probably only set
+    // this to yes if using another controller to display the search results.
+    self.searchController.dimsBackgroundDuringPresentation = NO;
+    
+    [self.searchController.searchBar sizeToFit];
+    self.tableView.tableHeaderView = self.searchController.searchBar;
+    
+    // Sets this view controller as presenting view controller for the search interface
+    self.definesPresentationContext = YES;
 }
 
 -(void)fetchMovies{
@@ -58,16 +79,7 @@
             // add the cancel action to the alertController
             [alert addAction:cancelAction];
             
-            /*
-            // create an OK action
-            UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"OK"
-                                                               style:UIAlertActionStyleDefault
-                                                             handler:^(UIAlertAction * _Nonnull action) {
-                                                                 // handle response here.
-                                                             }];
-            // add the OK action to the alert controller
-            [alert addAction:okAction];
-            */
+
             [self presentViewController:alert animated:YES completion:^{
                 // optional code for what happens after the alert controller has finished presenting
             }];
@@ -79,6 +91,7 @@
             NSLog(@"%@", dataDictionary);
             NSArray *movies = dataDictionary[@"results"];
             self.movies = movies;
+            self.filteredData = self.movies;
             for (NSDictionary *movie in movies){
                 NSLog(@"%@", movie[@"title"]);
             }
@@ -97,13 +110,13 @@
 
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    return self.movies.count;
+    return self.filteredData.count;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     //reuse cells
     MovieCell *cell = [tableView dequeueReusableCellWithIdentifier:@"MovieCell"];
-    NSDictionary *movie = self.movies[indexPath.row];
+    NSDictionary *movie = self.filteredData[indexPath.row];
     cell.titleLabel.text = movie[@"title"];
     cell.synopsisLabel.text = movie[@"overview"];
     
@@ -117,7 +130,27 @@
     return cell; 
 }
 
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    
+    NSString *searchText = searchController.searchBar.text;
+    if (searchText) {
+        
+        if (searchText.length != 0) {
+            NSPredicate *predicate = [NSPredicate predicateWithBlock:^BOOL(NSDictionary *evaluatedObject, NSDictionary *bindings) {
+                return [evaluatedObject[@"title"] containsString:searchText];
+            }];
+            self.filteredData = [self.movies filteredArrayUsingPredicate:predicate];
+        }
+        else {
+            self.filteredData = self.movies;
+        }
+        
+        [self.tableView reloadData];
+        
+    }
+}
 
+    
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -126,7 +159,7 @@
     // Pass the selected object to the new view controller.
     UITableViewCell *tappedCell = sender;
     NSIndexPath *indexPath = [self.tableView indexPathForCell:tappedCell];
-    NSDictionary *movie = self.movies[indexPath.row];
+    NSDictionary *movie = self.filteredData[indexPath.row];
     
     DetailsViewController *detailViewController = [segue destinationViewController];
     detailViewController.movie = movie;

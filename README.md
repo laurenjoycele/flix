@@ -39,9 +39,8 @@ Please list two areas of the assignment you'd like to **discuss further with you
 
 Here's a walkthrough of implemented user stories:
 
-<img src='http://recordit.co/FazLnmpPZ6' title='Video Walkthrough for good wifi' width='' alt='Video Walkthrough for good wifi' />
-<img src='http://recordit.co/FazLnmpPZ6' title='Video Walkthrough' width='' alt='Video Walkthrough' />
-<img src='http://recordit.co/C5tNP4LItA' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://g.recordit.co/FazLnmpPZ6.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='http://g.recordit.co/C5tNP4LItA.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
